@@ -15,6 +15,11 @@ These digital assets may be currency-like or goods-like valuables, but
 they can also represent other kinds of rights, such as the right to
 participate in a particular contract.
 
+An issuer and its associated mint are two facets of the same service. The 
+mint must be very closely held due to its power to issue new digital assets. 
+The issuer is intended to be widely held, including by parties the issuer 
+does not trust and that don't trust each other.
+
 ## Purses
 
 Purses hold `amounts` of digital assets of the same brand. Purses should not be
