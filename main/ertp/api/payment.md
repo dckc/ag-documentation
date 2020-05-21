@@ -7,7 +7,7 @@ linear, meaning that either a payment has its full original balance,
 or it is used up entirely. It is impossible to partially use a
 payment.
 
-Payments are often received from other actors and therefore should not be trusted themselves. To get the balance of a payment, use the trusted issuer: issuer.getAmountOf(payment).
+Payments are often received from other actors and therefore should not be trusted themselves. To get the balance of a payment, use the trusted issuer: `issuer.getAmountOf(payment)`.
 
 Payments can be converted to Purses by getting a trusted issuer and calling `issuer.makeEmptyPurse()` to create a purse, then `purse.deposit(payment)`.
 
