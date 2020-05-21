@@ -74,7 +74,12 @@ An issuer's special admin facet is a Mint, and that Mint and Issuer are
 
 Issuers (i.e. their references) should be gotten from a trusted source
 and then relied upon as the decider of whether an untrusted payment is
-valid  
+valid.
+
+An issuer and its associated mint are two facets of the same service. The 
+mint must be very closely held due to its power to issue new digital assets. 
+The issuer is intended to be widely held, including by parties the issuer 
+does not trust and that don't trust each other.
 
 **Note**: There is a one-to-one correspondence between a brand and a
   mint, a mint and an issuer, and an issuer and a brand. In other
