@@ -140,9 +140,9 @@ JSON is a ubiquitous language for structured data:
 ## Reference: Justin for Safe Expressions
 
  - more flexible syntax:
-   - string delimters: `"abc"` or  `'abc'`
+   - string delimiters: `"abc"` or  `'abc'`
    - trailing commas: `{ size: 1, }`, `[1, 2, 3,]`
-   - un-quoted properties: `{ size: 1, color: "blue" }`
+   - un-quoted property names: `{ size: 1, color: "blue" }`
    - short-hand properties: `{ size }`
    - comments:
       - single line: `// ...`
@@ -186,6 +186,7 @@ In an environment with pre-declared variables:
 
 ## Jessie: operators
 
+  - pre-increment, decrement: `++x`, `--x`
   - post-increment, decrement: `x++`, `x--`
 
 ## Reference: Jessie for simple, universal safe mobile code
@@ -209,11 +210,26 @@ statements, declarations:
  - bindings: `const c = a + b;`, `let x = 1;`
  - assignment: `x = x + 2`;
    - combined: `x += 2`;
- - `if ... then ... else`, `switch`
- - `while`, `break`, `continue`
- - `try` / `finally / `catch`
- - `for (x of items) { }`
-   - **no `for (x in items)`!**
+ - `if (cond) { /* then block */ } else { /* else block */ }`
+ - `switch`:
+ 
+```js
+       switch (value) {
+         case 'a':
+         case 'b': {
+           /* 'a' and 'b' block */
+           break;
+         }
+         default: {
+           /* default block */
+         }
+       }
+```// TODO: delete this comment to close the js fence
+ - `while (condition) { /* body */ }`
+ - `break`, `continue`
+ - `try` / `catch` / `finally`
+ - `for (const x of items) { /* body */ }`
+   - **no `for (const x in items)`!** Use `for (const x of Object.keys(items))` instead
 
 _TODO: accessor methods?_
 
