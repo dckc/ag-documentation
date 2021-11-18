@@ -38,14 +38,53 @@ buggy or malicious.
 
 ### For Developers ###
 
-**Zoe is easier.**  Traditionally, writing a smart contract meant
+**Zoe is easier.**  Before Zoe, writing a smart contract often meant
 learning a new, untried language. And don't make any mistakes - if you
 do, your users might lose millions.
 
-However, you write Zoe contracts in a secure subset of JavaScript.
+However, you write Zoe contracts in Hardened JavaScript.
 Moreover, Zoe automatically escrows all user digital assets and
 handles their subsequent payout. **Even a buggy contract can't cause
 users to lose their assets.**
+
+## Hello, Zoe!
+
+Let's have a look at a simple JavaScript smart contract.
+
+<<< @/snippets/zoe/hello1.js
+
+The contract is defined by an `start` function, exported
+using standard module syntax. This is mostly an ordinary
+JavaScript function that declares a `value` variable,
+makes an object with `get` and `set` methods, and returns it. A few
+things are a bit out of the ordinary:
+
+ - We recommend arrow (`=>`) function style for clarity;
+   in _Hardened JavaScript @@TODO_ we'll go into more
+   detail on recommendations and requirements for using
+   JavaScript securely.
+ - `_zcf` is prefixed with `_` to mark it unused;
+   we'll discuss the _Zoe Contract Facet @@TODO link_ a little later.
+ - `Far` marks an object as suitable for remote use;
+    _Distribute Object Model @@TODO_ for more.
+
+## Controlling Access with Object Capabilities (OCaps)
+
+To control who has access to the `set` method, we can move it
+from the `publicFacet` to a `creatorFacet`:
+
+<<< @/snippets/zoe/hello-facets.js
+
+The public facet is available to anyone who asks
+(using [getPublicFacet](/zoe/api/zoe.html#e-zoe-getpublicfacet-instance)),
+but the `creatorFacet` is only returned to the caller that
+starts the contract (using [startInstance](/zoe/api/zoe.html#e-zoe-startinstance-installation-issuerkeywordrecord-terms)).
+
+This pattern of multiple object providing different access to some shared state
+(the `value` variable) is one of many _patterns of
+cooperation without vulnerability_ that are straightforwardly expressed using
+the Object Capability (OCap) security model. _@@TODO: OOP/encapsulation_
+_@@fwd ref? prune para?_
 
 ### Contracts on Zoe
 
