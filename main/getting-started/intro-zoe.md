@@ -17,20 +17,20 @@ few months.
 
 ## What is Zoe?
 
-Zoe is Agoric's smart contract framework. Use Zoe to:
+Zoe is the Agoric smart contract framework. It provides _offer safety_,
+enforcing the previously implicit agreement that, for example, if I hand my
+dollar to a fruit vendor, I will get an apple in exchange.
 
-* **Run your code on-chain**
-* **Mint new digital assets**
-* **Credibly trade assets**
+## Zoe and Offer Safety
 
-Zoe relies on Agoric's [*Electronic Rights Transfer Protocol
-(ERTP)*](./ertp-introduction.md), our token standard.
+Zoe is based on offers, rather than one-way transactions. An offer
+expresses what is wanted (an apple) as well as what is given (a dollar).
 
 ## Why use Zoe?
 
 ### For Users ###
 
-**Zoe is safer.** Traditionally, putting digital assets in a smart
+**Zoe is safer.** Before Zoe, putting digital assets in a smart
 contract has risked losing them. But Zoe guarantees you get either
 what you wanted or a full refund of the assets you put in. You will
 never leave a contract empty-handed, even if the smart contract is
