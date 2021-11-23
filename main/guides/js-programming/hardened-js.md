@@ -15,12 +15,12 @@ the `includes` method on `Array` objects, we run the risk of password exfiltrati
 
 <<< @/snippets/test-no-ses.js#exfiltrate
 
-## Object Capability (OCap) Security and the Principle of Least Authority
+## Object-Capability (OCap) Security and the Principle of Least Authority
 
-In Hardened JavaScript, the `Object.assign` fails because
-**all [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
-are immutable**. Moreover, our first property of an _object capability_ system
-is that **everything global is immutable with no IO access**.
+In Hardened JavaScript, the `Object.assign` fails because `Array.prototype` and all other
+[standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
+are immutable. In fact, the first property of an _object-capability_ system is that
+**everything global is pure functions or data** with no shared mutable state and no IO access.
 Network IO via the `fetch` object is not available in the global
 scope (nor by way of imported Hardened JavaScript modules);
 likewise, random number IO with `Math.random` is not available
@@ -29,35 +29,43 @@ and `Date.now()` always returns `NaN`, preventing clock IO.
 ::: tip TODO: how to advise against / prohibit exporting mutable state from modules?
 :::
 
-JavaScript, including Hardened JavaScript, is memory-safe,
-so we have our next object capability requirement: **object references cannot be forged**.
-If object `bob` has no reference to object `concertTicket`,
-the only way `bob` can obtain a reference to it
-is if some object `alice` has references to both `bob` and `concertTicket`
-and passes `concertTicket` to `bob` in a call such as `bob.receive(concertTicket)`.
-We refer to these unforgeable object references as _object capabilities_.
-
-![alice calls bob.receive(concertTicket)](../../assets/Introduction.svg)
-
-::: tip Forging references in memory-unsafe languages
-In C/C++, if `b` knows that object `c` of type `T` is at address `size_t c_addr = 0xDEADBEAF;` in memory,
-`b` can _forge_ a reference to `c` by casting the number to a pointer: `T *c = (T*)c_addr;`.
-In rust and go, forging references is allowed only in explicitly unsafe constructs, but it is possible.
-:::
-
-Finally, Hardened JavaScript is always in
+Hardened JavaScript is always in
 [strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode),
-which provides complete encapsulation so that we have our
-final object capability property: **access to (and modification of) internal state of
-an objects is voluntary**, as expressed in its external methods.
-One object cannot directly read or tamper with the contents of another.
+which provides complete encapsulation so that we have the
+next property of an object-capability system:
+**access to (and modification of) internal state of an objects is voluntary**,
+as expressed in its external methods.
+Objects can prevent other objects from directly reading or tampering with their contents.
 
 ::: tip TODO: mention `caller`, `msg.sender`?
 :::
 
-As we will see, object capabilities facilitate
-application of the [principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege)
-and let us express powerful patterns of cooperation _without_ vulnerability.
+JavaScript, including Hardened JavaScript, is memory-safe,
+providing the final property of an object-capability system: **object references cannot be forged**.
+If object `bob` has no reference to object `concertTicket`,
+the only way `bob` can obtain a reference to it
+is if some object `alice` has references to both `bob` and `concertTicket`
+and passes `concertTicket` to `bob` in a call such as `bob.receive(concertTicket)`.
+We refer to these unforgeable object references as _object-capabilities_ or _OCaps_.
+
+![alice calls bob.receive(concertTicket)](../../assets/Introduction.svg)
+
+With the properties of an OCap system in place, we need no
+separate access control mechanism. The fact that `alice` is authorized
+to grant `bob` access to the `concertTicket` is represented by the fact that `alice` has
+references to both `bob` and the `concertTicket`. The `bob.receive` method
+needs no check on the identity, groups, or roles of its caller.
+
+As we will see, OCaps let us express many such powerful patterns of cooperation without vulnerability,
+leading to convenient application of the [principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege).
+
+::: tip Unforgeable references at compile time and runtime
+In C/C++, if object `bob` learns that object `concertTicket` of type `Ticket` is
+at address `size_t addr = 0xDEADBEAF;` in memory, `bob` can
+_forge_ a reference to `concertTicket` by casting the number to a pointer: `Ticket *concertTicket = (Ticket*)addr;`.
+In rust and go, forging references is allowed only in explicitly unsafe constructs,
+but this is a compile-time check. In JavaScript, memory-safety is a runtime property.
+:::
 
 ## Lint Tools for Hardened JavaScript and Jessie
 
