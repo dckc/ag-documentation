@@ -1,10 +1,60 @@
 # Intro to Hardened JavaScript
 
-_Status: WIP_.
+::: tip Status: Work In Progress
+:::
 
- - JavaScript is popular
- - JavaScript has some messy parts
- - Stick to Hardened JavaScript
+JavaScript is a remarkably expressive programming language, but
+not all of the expressiveness is useful for building smart contracts.
+Consider this `changePassword` function:
+
+<<< @/snippets/test-no-ses.js#changePassword
+
+In ordinary JavaScript, since someone might have redefined
+the `includes` method on `Array` objects, we run the risk of password exfiltration:
+
+<<< @/snippets/test-no-ses.js#exfiltrate
+
+## Object Capability (OCap) Security and the Principle of Least Authority
+
+In Hardened JavaScript, the `Object.assign` fails because
+**all [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
+are immutable**. Moreover, our first property of an _object capability_ system
+is that **no IO access or shared mutable state is granted by any global object**.
+Network IO via the `fetch` object is not available in the global
+scope (nor by way of imported Hardened JavaScript modules);
+likewise, random number IO with `Math.random` is not available
+and `Date.now()` always returns `NaN`, preventing clock IO.
+
+::: tip TODO: how to advise against / prohibit exported mutable state?
+:::
+
+JavaScript, including Hardened JavaScript, is memory-safe,
+so we have our next object capability requirement: **object references cannot be forged**.
+If object `bob` has no reference to object `concertTicket`,
+the only way `bob` can obtain a reference to it
+is if some object `alice` has references to both `bob` and `concertTicket`
+and passes `concertTicket` to `bob` in a call such as `bob.receive(concertTicket)`.
+We refer to these unforgeable object references as _object capabilities_.
+
+![alice calls bob.receive(concertTicket)](../../assets/Introduction.svg)
+
+::: tip Forging references in memory-unsafe languages
+In C/C++, if `b` knows that object `c` of type `T` is at address `size_t c_addr = 0xDEADBEAF;` in memory,
+`b` can _forge_ a reference to `c` by casting the number to a pointer: `T *c = (T*)c_addr;`.
+In rust and go, forging references is allowed only in explicitly unsafe constructs, but it is possible.
+:::
+
+Finally, JavaScript provides encapsulation so that we have our
+final object capability property: **access to (and modification of) internal state of
+an objects is voluntary**, as expressed in its external methods.
+One object cannot directly read or tamper with the contents of another.
+
+As we will see, object capabilities facilitate
+application of the [principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege)
+and let us express powerful patterns of cooperation _without_ vulnerability.
+
+
+## @@@@
 
 Overview:
  - Objects
