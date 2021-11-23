@@ -1,4 +1,5 @@
-/* eslint-disable no-use-before-define */
+// @jessie-check
+/* global Compartment */
 import { test } from '@agoric/zoe/tools/prepare-test-env-ava';
 
 test('Date.now() always returns NaN', t => {
@@ -11,7 +12,80 @@ test('Math.random is not available', t => {
   t.throws(() => c1.evaluate(`Math.random()`));
 });
 
+test('stateless object', t => {
+  const assert = cond => t.true(cond);
+
+  // #region data
+  const item = { size: 2, color: 'blue' };
+  const point = { x: 1, y: 2 };
+  assert(point.x + 1 === item.size);
+  // #endregion data
+
+  // #region singleton
+  const origin = {
+    getX: () => 0,
+    getY: () => 0,
+    distance: other => Math.sqrt(other.getX() ** 2 + other.getY() ** 2),
+  };
+  const x0 = origin.getX();
+  assert(x0 === 0);
+  // #endregion singleton
+
+  // #region maker
+  const makePoint = (x, y) => {
+    return {
+      getX: () => x,
+      getY: () => y,
+    };
+  };
+  const p11 = makePoint(1, 1);
+  const d = origin.distance(p11);
+  assert(Math.abs(d - 1.414) < 0.001);
+  // #endregion maker
+
+  // #region clobber
+  p11.getX = () => 'I am not a number!';
+  const d2 = origin.distance(p11);
+  assert(Number.isNaN(d2));
+  // #endregion clobber
+
+  const missiles = { launch: () => null };
+
+  p11.getX = () => 1;
+  // #region exploit
+  p11.getY = () => {
+    missiles.launch(); // !!!
+    return 1;
+  };
+  const d3 = origin.distance(p11);
+  assert(Math.abs(d3 - 1.414) < 0.001);
+  // #endregion exploit
+});
+
+test('hardened point thwarts attacker', t => {
+  // #region defensiveMaker
+  const makePoint = (x, y) => {
+    return harden({
+      getX: () => x,
+      getY: () => y,
+    });
+  };
+  // #endregion defensiveMaker
+  t.throws(() => {
+    // #region thwarted
+    const p11 = makePoint(1, 1);
+    // throws
+    p11.getX = () => 1;
+    // #endregion thwarted
+  });
+});
+
 test('cannot redefine includes method on Array', t => {
+  const fail = msg => {
+    throw Error(msg);
+  };
+  const fetch = () => fail('not allowed');
+
   t.throws(
     () =>
       Object.assign(Array.prototype, {
@@ -55,13 +129,6 @@ test('count people coming and going', t => {
   // #endregion counter1
 });
 
-test.skip('too maleable', t => {
-  const launchTheMissiles = () => 'oh no!';
-  c1.increment = () => launchTheMissiles();
-
-  t.is(c1.increment(), 'oh no!');
-});
-
 // #region makeCounter
 const makeCounter = init => {
   let value = init;
@@ -92,6 +159,7 @@ const makeMint1 = () => {
   const ledger = makeWeakMap();
 
   const issuer = {
+    // eslint-disable-next-line no-use-before-define
     makeEmptyPurse: () => mint.makePurse(0n),
   };
 
@@ -142,6 +210,7 @@ const makeMint = () => {
   const ledger = makeWeakMap();
 
   const issuer = harden({
+    // eslint-disable-next-line no-use-before-define
     makeEmptyPurse: () => mint.makePurse(0n),
   });
 

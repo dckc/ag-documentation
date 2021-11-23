@@ -5,6 +5,7 @@
 
 JavaScript is a remarkably expressive programming language, but
 not all of the expressiveness is useful for building smart contracts.
+
 Consider this `changePassword` function:
 
 <<< @/snippets/test-no-ses.js#changePassword
@@ -19,13 +20,13 @@ the `includes` method on `Array` objects, we run the risk of password exfiltrati
 In Hardened JavaScript, the `Object.assign` fails because
 **all [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
 are immutable**. Moreover, our first property of an _object capability_ system
-is that **no IO access or shared mutable state is granted by any global object**.
+is that **everything global is immutable with no IO access**.
 Network IO via the `fetch` object is not available in the global
 scope (nor by way of imported Hardened JavaScript modules);
 likewise, random number IO with `Math.random` is not available
 and `Date.now()` always returns `NaN`, preventing clock IO.
 
-::: tip TODO: how to advise against / prohibit exported mutable state?
+::: tip TODO: how to advise against / prohibit exporting mutable state from modules?
 :::
 
 JavaScript, including Hardened JavaScript, is memory-safe,
@@ -44,28 +45,27 @@ In C/C++, if `b` knows that object `c` of type `T` is at address `size_t c_addr 
 In rust and go, forging references is allowed only in explicitly unsafe constructs, but it is possible.
 :::
 
-Finally, JavaScript provides encapsulation so that we have our
+Finally, Hardened JavaScript is always in
+[strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode),
+which provides complete encapsulation so that we have our
 final object capability property: **access to (and modification of) internal state of
 an objects is voluntary**, as expressed in its external methods.
 One object cannot directly read or tamper with the contents of another.
+
+::: tip TODO: mention `caller`, `msg.sender`?
+:::
 
 As we will see, object capabilities facilitate
 application of the [principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege)
 and let us express powerful patterns of cooperation _without_ vulnerability.
 
+## Lint Tools for Hardened JavaScript and Jessie
 
-## @@@@
-
-Overview:
- - Objects
- - Defensive Correctness
- - **Electronic Rights**
- - Data Structures
- - Reference: JSON Data, Justin expressions, Jessie programs
-
-## Getting Started: Tools
-
-TL;DR: Here are the steps to play whack-a-mole with the Jessie linter:
+::: tip eslint configuration for Jessie
+The examples that follow are written using Jessie, our
+recommended style for writing JavaScript smart contracts
+This `eslint` configuration provides tool support.
+:::
 
 1. If not already configured, run `yarn add eslint @jessie.js/eslint-plugin`
 2. If not already configured, add the following to your `package.json`:
@@ -82,22 +82,80 @@ TL;DR: Here are the steps to play whack-a-mole with the Jessie linter:
 4. Run `yarn eslint --fix path/to/your-source.js`
 5. Follow the linter's advice to edit your file, then go back to step 4.
 
-## Simple Objects
+## Stateless Objects and Makers
 
-Singleton, stateless:
+JavaScript is somewhat novel in that objects need not belong to any
+class; they can just stand on their own:
+
+<<< @/snippets/test-hardened-js.js#singleton
+
+We can make a new such object each time a function is called
+using the _maker pattern_:
+
+<<< @/snippets/test-hardened-js.js#maker
+
+::: tip Use lexically scoped variables rather than properties of this.
+The style above boilerplate such as `this.x = x; this.y = y`.
+:::
+
+::: tip Use arrow functions
+We recommend [arrow function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+syntax rather than `function makePoint(x, y) { ... }` declarations
+for conciseness and to avoid some hazards involving `this`.
+:::
+
+## WARNING: Pervasive Mutability
+
+While JavaScript allows complete encapsulation, it is unfortunately
+not the default. By default, anyone can clobber the properties of
+our objects so that they fail to conform to the expected API:
+
+<<< @/snippets/test-hardened-js.js#clobber
+
+Worse yet is to clobber a property so that it misbehaves but
+covers its tracks so that we don't notice:
+
+<<< @/snippets/test-hardened-js.js#exploit
+
+## Defensive objects with `harden()`
+
+To prevent tampering, use `harden()` before returning an object
+(or otherwise exposing it by, for example, passing it to a function):
+
+<<< @/snippets/test-hardened-js.js#defensiveMaker
+
+Any attempt to modify the properties of a hardened object throws:
+
+<<< @/snippets/test-hardened-js.js#thwarted
+
+## Stateful objects and Facets
 
 ```js
-const origin = {
-    getX: () => 0,
-    getY: () => 0,
+const makeCounter = init => {
+  let value = init;
+  return harden({
+    increment: () => {
+      value += 1;
+      return value;
+    },
+    makeOffsetCounter: delta => makeCounter(value + delta),
+  });
 };
 ```
 
-```console
-> origin.getY()
-0
+```
+> const c3 = Object.freeze(c1.makeOffsetCounter(10));
+undefined
+> c3.increment = () => { console.log('launch the missiles!'); }
+TypeError: Cannot assign to read only property 'increment' of object '#<Object>'
+> c3.increment()
+15
 ```
 
+ - _caveat_: exception is thrown in strict mode. REPL might not throw.
+ - regardless, the object defended itself
+ - Jessie pre-defines `harden` (_as does Agoric smart contract framework_)
+   - see the `ses` [hardened Javascript package](https://github.com/endojs/endo/tree/master/packages/ses#harden) otherwise
 
 ## Object makers
 
@@ -137,44 +195,6 @@ Type ".help" for more information
 
 _TODO: `decrement()`, facets_
 
-## WARNING: Pervasive Mutability
-
-```console
-> c1.increment = () => { console.log('launch the missiles!'); }
-[Function (anonymous)]
-> c1.increment()
-launch the missiles!
-```
-
-
-## Defensive objects with `harden()`
-
-```js
-const makeCounter = init => {
-  let value = init;
-  return harden({
-    increment: () => {
-      value += 1;
-      return value;
-    },
-    makeOffsetCounter: delta => makeCounter(value + delta),
-  });
-};
-```
-
-```
-> const c3 = Object.freeze(c1.makeOffsetCounter(10));
-undefined
-> c3.increment = () => { console.log('launch the missiles!'); }
-TypeError: Cannot assign to read only property 'increment' of object '#<Object>'
-> c3.increment()
-15
-```
-
- - _caveat_: exception is thrown in strict mode. REPL might not throw.
- - regardless, the object defended itself
- - Jessie pre-defines `harden` (_as does Agoric smart contract framework_)
-   - see the `ses` [hardened Javascript package](https://github.com/endojs/endo/tree/master/packages/ses#harden) otherwise
 
 
 ## Types: advisory
@@ -308,3 +328,5 @@ const makeMint = () => {
  - JSON / Justin / Jessie as in [Jessica](https://github.com/agoric-labs/jessica)
  - Build slides with [Remark](https://remarkjs.com/#1)
    - example: [kumc\-bmi/naaccr\-tumor\-data](https://github.com/kumc-bmi/naaccr-tumor-data)
+
+[![Subsetting JavaScript](https://raw.githubusercontent.com/endojs/Jessie/main/docs/jessie.png)](https://github.com/endojs/Jessie#subsetting-ecmascript)
