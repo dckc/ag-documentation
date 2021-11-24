@@ -3,9 +3,112 @@
 ::: tip Status: Work In Progress
 :::
 
-JavaScript is a remarkably expressive programming language, but
-not all of the expressiveness is useful for building smart contracts.
+::: tip Watch: Object-capability Programming in Secure Javascript
 
+An August 2019 talk by Mark Miller provides a video presentation
+of much of the same material. _The relevant part is about 15 minutes long.
+The last 10 minutes are Q&A._
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/YcWXqHPui_w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+:::
+
+
+## Counter Example
+
+In case you thought JavaScript cannot be used to write
+reliable, secure smart contracts, we begin with this
+counter example. :)
+
+<<< @/snippets/test-hardened-js.js#makeCounter
+
+Note the use of functions and records:
+
+ - `makeCounter` is a function
+ - Each call to `makeCounter` creates a new "instance":
+   - a new record with two properties, `incr` and `decr`, and
+   - a new `count` variable.
+ - The `incr` and `decr` properties are visible from
+   outside the object.
+ - The the `count` variable is encapsulated; only the
+   `incr` and `decr` methods can access it.
+ - Each of these instances is isolated from each other
+
+::: tip style: clarity counts
+The example in the video cuts a few corners to better
+fit on a slide. For clarity, we recommend:
+ - Avoid `--count` and `++count`. (_TODO: why??_)
+ - Break lines after `{` and before `}`. (_TODO: why??_)
+:::
+
+## Counter Example: Separation of Duties
+
+Suppose we want to keep track of the number of people
+inside a room by having an `entryGuard` count up when
+people enter the room and an `exitGuard` count down
+when people exit the room.
+
+<<< @/snippets/test-hardened-js.js#entryExit
+
+We can give the `entryGuard` access to the `incr` function
+and give the `exitGuard` access to the `decr` function.
+
+The result is that the `entryGuard` can _only_ count up
+and the `exitGuard` can _only_ count down.
+
+::: tip Eventual send syntax
+The `obj ! method(arg)` code in the video means
+the same thing as `E(obj).method(arg)`. We'll
+cover eventual send in another section. (_TODO: IOU link_)
+:::
+
+## Object-capabilities (ocaps)
+
+The separation of duties illustrates the core idea
+of _object capabilities_: an object reference familiar
+from object programming _is_ a permission.
+
+Alice says: `bob.receive(carol)`
+![alice calls bob.receive(carol)](../../assets/Introduction.svg)
+
+If object `bob` has no reference to object `carol`,
+then `bob` cannot invoke `carol`; it cannot
+provoke whatever behavior `carol` would have.
+
+If `alice` has a reference `bob` and invokes `bob`,
+passing `carol` as an argument, then `alice` has both
+used her permission to invoke `bob` and given `bob`
+permission to invoke `carol`.
+
+We refer to these object references as _object-capabilities_ or _ocaps_.
+
+## The Principle of Least Authority (POLA)
+
+OCaps give us a natural way to express the
+[principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege), where each object
+is only given the permission it needs to do its legitimate job,
+such as only giving the `entryGuard` the ability to increment the counter.
+
+This limits the damage that can happen if there is an exploitable bug.
+
+## Hardening JavaScript: strict mode
+
+The first step to hardening JavaScript is that Hardened JavaScript
+is always in [strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode).
+
+The most likely way that you would notice this is if you
+make a typo in a variable name: this will throw a `ReferenceError`
+rather than silently continuing, with untold results.
+
+Important benefits of strict mode include complete encapsulation
+(no `caller` etc.) and reliable static scoping.
+
+::: tip TODO: mention `msg.sender`?
+:::
+
+## Hardening JavaScript: frozen built-ins
+
+One form of authority that is too widely available in
+ordinary JavaScript is the ability to redefine built-ins.
 Consider this `changePassword` function:
 
 <<< @/snippets/test-no-ses.js#changePassword
@@ -15,11 +118,44 @@ the `includes` method on `Array` objects, we run the risk of password exfiltrati
 
 <<< @/snippets/test-no-ses.js#exfiltrate
 
-## Object-Capability (OCap) Security and the Principle of Least Authority
-
 In Hardened JavaScript, the `Object.assign` fails because `Array.prototype` and all other
 [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
-are immutable. In fact, the first property of an _object-capability_ system is that
+are immutable.
+
+## Hardening JavaScript: Limiting Globals with Compartments
+
+A globally available function such as `fetch` means that every object,
+including a simple string manipulation function, can access the network.
+In order to eliminate this sort of excess authority, _Object-capabity discipline_
+calls for limiting globals to immutable data and deterministic functions.
+
+Hardened JavaScript includes a `Compartment` API for enforcing OCap discipline.
+Only the [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) are globally available, by default
+(with an option for carefully controlled exceptions such as `console.log`).
+With the default `Compartment` options, `Math.random` is not available
+and `Date.now()` always returns `NaN`, preventing clock IO.
+
+The conventional globals defined by browser or node.js hosts are
+not available by default in a `Compartment`, whether authority-bearing
+or not:
+
+ - authority-bearing:
+   - `window`, `document`, `process`, `console`
+   - `require` (use `import` module syntax instead)
+   - `setImmediate`, `clearImmediate`, `setTimeout`
+     - but `Promise` is available, so sometimes
+       `Promise.resolve().then(_ => fn())` suffices
+ - authority-free but host-defined:
+   - `Buffer`
+   - `URL` and `URLSearchParams`
+   - `TextEncoder`, `TextDecoder`
+   - `WebAssembly`
+
+Compartments used to load Agoric smart contracts do provide
+`console` and `assert` globals.
+
+::: tip TODO: ref SES console / assert API?
+:::
 **everything global is pure functions or data** with no shared mutable state and no IO access.
 Network IO via the `fetch` object is not available in the global
 scope (nor by way of imported Hardened JavaScript modules);

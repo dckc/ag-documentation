@@ -1,6 +1,40 @@
 // @jessie-check
 /* global Compartment */
-import { test } from '@agoric/zoe/tools/prepare-test-env-ava';
+import { test } from '@agoric/zoe/tools/prepare-test-env-ava.js';
+import { E } from '@agoric/eventual-send';
+
+test('Counter Example', t => {
+  const assert = cond => t.true(cond);
+
+  // #region makeCounter
+  const makeCounter = () => {
+    let count = 0;
+    return harden({
+      incr: () => {
+        count += 1;
+        return count;
+      },
+      decr: () => {
+        count -= 1;
+        return count;
+      },
+    });
+  };
+
+  const counter = makeCounter();
+  counter.incr();
+  const n = counter.incr();
+  assert(n === 2);
+  // #endregion makeCounter
+
+  const entryGuard = { use: _f => {} };
+  const exitGuard = { use: _f => {} };
+
+  // #region entryExit
+  E(entryGuard).use(counter.incr);
+  E(exitGuard).use(counter.decr);
+  // #endregion entryExit
+});
 
 test('Date.now() always returns NaN', t => {
   const c1 = new Compartment();
