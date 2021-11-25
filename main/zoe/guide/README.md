@@ -147,6 +147,10 @@ several optional properties:
 
 ## Diving Deeper
 
+::: tip Watch: How To Build a Basic Loan Contract
+[![How To Build a Basic Loan Contract](../../assets/zoe-offer-lifecycle-screenshot.png)](https://www.youtube.com/watch?v=1GD8agbYxv8)
+:::
+
 Let's dive back into the `atomicSwap` contract. As with `automaticRefund`, see the [real contract code
 here](https://github.com/Agoric/agoric-sdk/blob/master/packages/zoe/src/contracts/atomicSwap.js).
 
