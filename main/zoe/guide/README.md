@@ -147,8 +147,10 @@ several optional properties:
 
 ## Diving Deeper
 
-::: tip Watch: How To Build a Basic Loan Contract
-[![How To Build a Basic Loan Contract](../../assets/zoe-offer-lifecycle-screenshot.png)](https://www.youtube.com/watch?v=1GD8agbYxv8)
+::: tip Watch: How To Build a Composable DeFi Contract
+<iframe width="560" height="315" src="https://www.youtube.com/embed/e9dMkC2oFh8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<br />
+<em>nearly 2 hours long, but worth every minute!</em>
 :::
 
 Let's dive back into the `atomicSwap` contract. As with `automaticRefund`, see the [real contract code
