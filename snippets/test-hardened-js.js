@@ -36,6 +36,27 @@ test('Counter Example', t => {
   // #endregion entryExit
 });
 
+test('counter animation', t => {
+  // #region counterAnimation
+  const makeCounter = () => {
+    let count = 0;
+    return harden({
+      incr: () => {
+        count += 1;
+        return count;
+      },
+      // ...
+    });
+  };
+  // #endregion counterAnimation
+
+  const c1 = makeCounter();
+
+  const c2 = makeCounter();
+  t.is(c2.incr(), 1);
+  t.deepEqual([c1.incr(), c2.incr()], [1, 2]);
+});
+
 test('Date.now() always returns NaN', t => {
   const c1 = new Compartment();
   t.is(c1.evaluate(`Date.now()`), NaN);

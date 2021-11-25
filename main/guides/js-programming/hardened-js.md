@@ -21,7 +21,8 @@ counter example. :)
 
 <<< @/snippets/test-hardened-js.js#makeCounter
 
-Note the use of functions and records:
+We'll unpack this a bit [below](#objects-and-the-maker-pattern), but for now,
+note the use of functions and records:
 
  - `makeCounter` is a function
  - Each call to `makeCounter` creates a new "instance":
@@ -33,14 +34,7 @@ Note the use of functions and records:
    `incr` and `decr` methods can access it.
  - Each of these instances is isolated from each other
 
-::: tip style: clarity counts
-The example in the video cuts a few corners to better
-fit on a slide. For clarity, we recommend:
- - Avoid `--count` and `++count`. (_TODO: why??_)
- - Break lines after `{` and before `}`. (_TODO: why??_)
-:::
-
-## Counter Example: Separation of Duties
+## Counter: Separation of Duties
 
 Suppose we want to keep track of the number of people
 inside a room by having an `entryGuard` count up when
@@ -58,7 +52,7 @@ and the `exitGuard` can _only_ count down.
 ::: tip Eventual send syntax
 The `obj ! method(arg)` code in the video means
 the same thing as `E(obj).method(arg)`. We'll
-cover eventual send in another section. (_TODO: IOU link_)
+cover eventual send when we cover the _distributed object model_. (_TODO: IOU link_)
 :::
 
 ## Object-capabilities (ocaps)
@@ -90,10 +84,99 @@ such as only giving the `entryGuard` the ability to increment the counter.
 
 This limits the damage that can happen if there is an exploitable bug.
 
+## Tool Support: eslint config
+
+::: tip eslint configuration for Jessie
+The examples that follow are written using _Jessie_, our
+recommended style for writing JavaScript smart contracts.
+This `eslint` configuration provides tool support.
+:::
+
+1. If not already configured, run `yarn add eslint @jessie.js/eslint-plugin`
+2. If not already configured, add the following to your `package.json`:
+
+```json
+  "eslintConfig": {
+    "extends": [
+      "@jessie.js"
+    ]
+  }
+```
+
+3. Put `// @jessie-check` at the beginning of your `.js` source file.
+4. Run `yarn eslint --fix path/to/your-source.js`
+5. Follow the linter's advice to edit your file, then go back to step 4.
+
+The example in the video cuts a few corners to better
+fit on a slide. For clarity and consistency
+with [Airbnb JavaScript Style](https://github.com/airbnb/javascript#variables--unary-increment-decrement), we recommend:
+ - Avoid `--` and `++` operators.
+ - Break lines after `{` and before `}`.
+
+## Objects and the _maker_ pattern
+
+Let's unpack the `makeCounter` example a bit.
+
+JavaScript is somewhat novel in that objects need not belong to any
+class; they can just stand on their own:
+
+<<< @/snippets/test-hardened-js.js#singleton
+
+We can make a new such object each time a function is called
+using the _maker pattern_:
+
+<<< @/snippets/test-hardened-js.js#maker
+
+::: tip Use lexically scoped variables rather than properties of this.
+The style above avoids boilerplate such as `this.x = x; this.y = y`.
+:::
+
+::: tip Use arrow functions
+We recommend [arrow function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+syntax rather than `function makePoint(x, y) { ... }` declarations
+for conciseness and to avoid `this`.
+:::
+
+## Defensive objects with `harden()`
+
+By default, anyone can clobber the properties of
+our objects so that they fail to conform to the expected API:
+
+<<< @/snippets/test-hardened-js.js#clobber
+
+Worse yet is to clobber a property so that it misbehaves but
+covers its tracks so that we don't notice:
+
+<<< @/snippets/test-hardened-js.js#exploit
+
+To prevent tampering, use [harden](https://github.com/endojs/endo/blob/master/packages/ses/README.md#harden), which is a deep form of [Object.freeze](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze).
+
+<<< @/snippets/test-hardened-js.js#defensiveMaker
+
+Any attempt to modify the properties of a hardened object throws:
+
+<<< @/snippets/test-hardened-js.js#thwarted
+
+## Objects with state
+
+Now let's review the `makeCounter` example:
+
+<<< @/snippets/test-hardened-js.js#counterAnimation
+
+Each call to `makeCounter` creates a new encapsulated `count` variable
+along with `incr` and `decr` functions. The `incr` and `decr` functions [close over](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) the `count` variable.
+
+To see how this works in detail, you may want to step through this
+[visualization of the code](https://pythontutor.com/live.html#code=const%20makeCounter%20%3D%20%28%29%20%3D%3E%20%7B%0A%20%20let%20count%20%3D%200%3B%0A%20%20const%20it%20%3D%20%7B%0A%20%20%20%20incr%3A%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20%20%20count%20%2B%3D%201%3B%0A%20%20%20%20%20%20return%20count%3B%0A%20%20%20%20%7D,%0A%20%20%20%20decr%3A%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20%20%20count%20-%3D%201%3B%0A%20%20%20%20%20%20return%20count%3B%0A%20%20%20%20%7D,%0A%20%20%7D%3B%0A%20%20return%20Object.freeze%28it%29%3B%0A%7D%3B%0A%0Aconst%20c1%20%3D%20makeCounter%28%29%3B%0A%0Aconst%20c2%20%3D%20makeCounter%28%29%3B%0Aconsole.log%28c2.incr%28%29%29%3B%0Aconsole.log%28%5Bc1.incr%28%29,%20c2.incr%28%29%5D%29%3B&cumulative=false&curInstr=25&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false"):
+
+[![makeCounter code animation](../../assets/counter-animation.png)](https://pythontutor.com/live.html#code=const%20makeCounter%20%3D%20%28%29%20%3D%3E%20%7B%0A%20%20let%20count%20%3D%200%3B%0A%20%20const%20it%20%3D%20%7B%0A%20%20%20%20incr%3A%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20%20%20count%20%2B%3D%201%3B%0A%20%20%20%20%20%20return%20count%3B%0A%20%20%20%20%7D,%0A%20%20%20%20decr%3A%20%28%29%20%3D%3E%20%7B%0A%20%20%20%20%20%20count%20-%3D%201%3B%0A%20%20%20%20%20%20return%20count%3B%0A%20%20%20%20%7D,%0A%20%20%7D%3B%0A%20%20return%20Object.freeze%28it%29%3B%0A%7D%3B%0A%0Aconst%20c1%20%3D%20makeCounter%28%29%3B%0A%0Aconst%20c2%20%3D%20makeCounter%28%29%3B%0Aconsole.log%28c2.incr%28%29%29%3B%0Aconsole.log%28%5Bc1.incr%28%29,%20c2.incr%28%29%5D%29%3B&cumulative=false&curInstr=25&heapPrimitives=nevernest&mode=display&origin=opt-live.js&py=js&rawInputLstJSON=%5B%5D&textReferences=false")
+
 ## Hardening JavaScript: strict mode
 
 The first step to hardening JavaScript is that Hardened JavaScript
 is always in [strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode).
+
+[![Subsetting JavaScript](https://raw.githubusercontent.com/endojs/Jessie/main/docs/jessie.png)](https://github.com/endojs/Jessie#subsetting-ecmascript)
 
 The most likely way that you would notice this is if you
 make a typo in a variable name: this will throw a `ReferenceError`
@@ -108,7 +191,8 @@ Important benefits of strict mode include complete encapsulation
 ## Hardening JavaScript: frozen built-ins
 
 One form of authority that is too widely available in
-ordinary JavaScript is the ability to redefine built-ins.
+ordinary JavaScript is the ability to redefine built-ins
+(shown above as "mutable primordials").
 Consider this `changePassword` function:
 
 <<< @/snippets/test-no-ses.js#changePassword
@@ -122,18 +206,30 @@ In Hardened JavaScript, the `Object.assign` fails because `Array.prototype` and 
 [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
 are immutable.
 
+You may notice this if you use certain libraries that make tweaks
+to the standard built-ins.
+
+::: tip TODO: advice on how to use patch-package etc.?
+:::
 ## Hardening JavaScript: Limiting Globals with Compartments
 
 A globally available function such as `fetch` means that every object,
 including a simple string manipulation function, can access the network.
 In order to eliminate this sort of excess authority, _Object-capabity discipline_
-calls for limiting globals to immutable data and deterministic functions.
+calls for limiting globals to immutable data and deterministic functions
+(eliminating "ambient authority" in the diagram above).
 
 Hardened JavaScript includes a `Compartment` API for enforcing OCap discipline.
-Only the [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) are globally available, by default
+Only the [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
+such as `Object`, `Array`, and `Promise` are globally available by default
 (with an option for carefully controlled exceptions such as `console.log`).
-With the default `Compartment` options, `Math.random` is not available
-and `Date.now()` always returns `NaN`, preventing clock IO.
+With the default `Compartment` options, the non-deterministic `Math.random`
+is not available and `Date.now()` always returns `NaN`.
+
+Almost all existing JS code was written to run under Node.js or inside a browser,
+so it's easy to conflate the environment features with JavaScript itself. For
+example, you may be surprised that `Buffer` and `require` are Node.js
+additions and not part of JavaScript.
 
 The conventional globals defined by browser or node.js hosts are
 not available by default in a `Compartment`, whether authority-bearing
@@ -156,190 +252,8 @@ Compartments used to load Agoric smart contracts do provide
 
 ::: tip TODO: ref SES console / assert API?
 :::
-**everything global is pure functions or data** with no shared mutable state and no IO access.
-Network IO via the `fetch` object is not available in the global
-scope (nor by way of imported Hardened JavaScript modules);
-likewise, random number IO with `Math.random` is not available
-and `Date.now()` always returns `NaN`, preventing clock IO.
 
-::: tip TODO: how to advise against / prohibit exporting mutable state from modules?
-:::
-
-Hardened JavaScript is always in
-[strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode),
-which provides complete encapsulation so that we have the
-next property of an object-capability system:
-**access to (and modification of) internal state of an objects is voluntary**,
-as expressed in its external methods.
-Objects can prevent other objects from directly reading or tampering with their contents.
-
-::: tip TODO: mention `caller`, `msg.sender`?
-:::
-
-JavaScript, including Hardened JavaScript, is memory-safe,
-providing the final property of an object-capability system: **object references cannot be forged**.
-If object `bob` has no reference to object `concertTicket`,
-the only way `bob` can obtain a reference to it
-is if some object `alice` has references to both `bob` and `concertTicket`
-and passes `concertTicket` to `bob` in a call such as `bob.receive(concertTicket)`.
-We refer to these unforgeable object references as _object-capabilities_ or _OCaps_.
-
-![alice calls bob.receive(concertTicket)](../../assets/Introduction.svg)
-
-With the properties of an OCap system in place, we need no
-separate access control mechanism. The fact that `alice` is authorized
-to grant `bob` access to the `concertTicket` is represented by the fact that `alice` has
-references to both `bob` and the `concertTicket`. The `bob.receive` method
-needs no check on the identity, groups, or roles of its caller.
-
-As we will see, OCaps let us express many such powerful patterns of cooperation without vulnerability,
-leading to convenient application of the [principle of least authority](https://en.wikipedia.org/wiki/Principle_of_least_privilege).
-
-::: tip Unforgeable references at compile time and runtime
-In C/C++, if object `bob` learns that object `concertTicket` of type `Ticket` is
-at address `size_t addr = 0xDEADBEAF;` in memory, `bob` can
-_forge_ a reference to `concertTicket` by casting the number to a pointer: `Ticket *concertTicket = (Ticket*)addr;`.
-In rust and go, forging references is allowed only in explicitly unsafe constructs,
-but this is a compile-time check. In JavaScript, memory-safety is a runtime property.
-:::
-
-## Lint Tools for Hardened JavaScript and Jessie
-
-::: tip eslint configuration for Jessie
-The examples that follow are written using Jessie, our
-recommended style for writing JavaScript smart contracts
-This `eslint` configuration provides tool support.
-:::
-
-1. If not already configured, run `yarn add eslint @jessie.js/eslint-plugin`
-2. If not already configured, add the following to your `package.json`:
-
-```json
-  "eslintConfig": {
-    "extends": [
-      "@jessie.js"
-    ]
-  }
-```
-
-3. Put `// @jessie-check` at the beginning of your `.js` source file.
-4. Run `yarn eslint --fix path/to/your-source.js`
-5. Follow the linter's advice to edit your file, then go back to step 4.
-
-## Stateless Objects and Makers
-
-JavaScript is somewhat novel in that objects need not belong to any
-class; they can just stand on their own:
-
-<<< @/snippets/test-hardened-js.js#singleton
-
-We can make a new such object each time a function is called
-using the _maker pattern_:
-
-<<< @/snippets/test-hardened-js.js#maker
-
-::: tip Use lexically scoped variables rather than properties of this.
-The style above boilerplate such as `this.x = x; this.y = y`.
-:::
-
-::: tip Use arrow functions
-We recommend [arrow function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
-syntax rather than `function makePoint(x, y) { ... }` declarations
-for conciseness and to avoid some hazards involving `this`.
-:::
-
-## WARNING: Pervasive Mutability
-
-While JavaScript allows complete encapsulation, it is unfortunately
-not the default. By default, anyone can clobber the properties of
-our objects so that they fail to conform to the expected API:
-
-<<< @/snippets/test-hardened-js.js#clobber
-
-Worse yet is to clobber a property so that it misbehaves but
-covers its tracks so that we don't notice:
-
-<<< @/snippets/test-hardened-js.js#exploit
-
-## Defensive objects with `harden()`
-
-To prevent tampering, use `harden()` before returning an object
-(or otherwise exposing it by, for example, passing it to a function):
-
-<<< @/snippets/test-hardened-js.js#defensiveMaker
-
-Any attempt to modify the properties of a hardened object throws:
-
-<<< @/snippets/test-hardened-js.js#thwarted
-
-## Stateful objects and Facets
-
-```js
-const makeCounter = init => {
-  let value = init;
-  return harden({
-    increment: () => {
-      value += 1;
-      return value;
-    },
-    makeOffsetCounter: delta => makeCounter(value + delta),
-  });
-};
-```
-
-```
-> const c3 = Object.freeze(c1.makeOffsetCounter(10));
-undefined
-> c3.increment = () => { console.log('launch the missiles!'); }
-TypeError: Cannot assign to read only property 'increment' of object '#<Object>'
-> c3.increment()
-15
-```
-
- - _caveat_: exception is thrown in strict mode. REPL might not throw.
- - regardless, the object defended itself
- - Jessie pre-defines `harden` (_as does Agoric smart contract framework_)
-   - see the `ses` [hardened Javascript package](https://github.com/endojs/endo/tree/master/packages/ses#harden) otherwise
-
-## Object makers
-
-```js
-const makeCounter = init => {
-  let value = init;
-  return {
-    increment: () => {
-      value += 1;
-      return value;
-    },
-    makeOffsetCounter: delta => makeCounter(value + delta),
-  };
-};
-```
-
-```console
-$ node
-Welcome to Node.js v14.16.0.
-Type ".help" for more information
-> const c1 = makeCounter(1);
-> c1.increment();
-2
-> const c2 = c1.makeOffsetCounter(10);
-> c1.increment();
-3
-> c2.increment();
-13
-> [c1.increment(), c2.increment()];
-[ 4, 14 ]
-```
-
- - An object is a record of functions that close over shared state.
- - The `this` keyword is not part of Jessie, so neither are constructors.
- - A `makeCounter` function takes the place of the `class Counter` constructor syntax.
-
-
-_TODO: `decrement()`, facets_
-
-
+## @@@@@@@@@@@ TODO: re-think remaining sections
 
 ## Types: advisory
 
@@ -472,5 +386,3 @@ const makeMint = () => {
  - JSON / Justin / Jessie as in [Jessica](https://github.com/agoric-labs/jessica)
  - Build slides with [Remark](https://remarkjs.com/#1)
    - example: [kumc\-bmi/naaccr\-tumor\-data](https://github.com/kumc-bmi/naaccr-tumor-data)
-
-[![Subsetting JavaScript](https://raw.githubusercontent.com/endojs/Jessie/main/docs/jessie.png)](https://github.com/endojs/Jessie#subsetting-ecmascript)
