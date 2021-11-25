@@ -84,6 +84,12 @@ such as only giving the `entryGuard` the ability to increment the counter.
 
 This limits the damage that can happen if there is an exploitable bug.
 
+::: tip Watch: Navigating the Attack Surface
+to achieve a *multiplicative* reduction in risk<br />
+[![Navigating the Attack Surface](https://i.ytimg.com/vi/wW9-KuezPp8/hqdefault.jpg?sqp=-oaymwEcCPYBEIoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBBrRPtKSnPu3Quq6yyJeJdu1kEyQ)](https://www.youtube.com/watch?v=wW9-KuezPp8)<br />
+_15 min_
+:::
+
 ## Tool Support: eslint config
 
 ::: tip eslint configuration for Jessie
