@@ -111,7 +111,6 @@ module.exports = {
           collapsible: false,
           children: [
             '/guides/js-programming/hardened-js',
-	    '/guides/js-programming/agoric-js-overview',
 	    '/guides/js-programming/ses/',
 	    '/guides/js-programming/bigint',
 	    '/guides/js-programming/vats',

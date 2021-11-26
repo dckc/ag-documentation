@@ -163,6 +163,13 @@ Any attempt to modify the properties of a hardened object throws:
 
 <<< @/snippets/test-hardened-js.js#thwarted
 
+`harden()` should be called on all objects that will be transferred
+across a trust boundary. It's important to `harden()` an object before exposing the object by returning it or passing it to some other function.
+
+::: tip harden(), classes, and details
+Note that hardening a class instance also hardens the class.
+For more details, see [harden API in the `ses` package](https://github.com/endojs/endo/blob/master/packages/ses/README.md#harden)
+:::
 ## Objects with state
 
 Now let's review the `makeCounter` example:
@@ -212,10 +219,12 @@ In Hardened JavaScript, the `Object.assign` fails because `Array.prototype` and 
 [standard, built-in objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects)
 are immutable.
 
-You may notice this if you use certain libraries that make tweaks
-to the standard built-ins.
+::: tip Compatibility issues with `ses` / Hardened JavaScript
+Certain libraries that make tweaks to the standard built-ins
+may fail in Hardened JavaScript.
 
-::: tip TODO: advice on how to use patch-package etc.?
+The [SES wiki](https://github.com/endojs/endo/wiki) tracks compatibility
+reports for NPM packages, including potential workarounds.
 :::
 ## Hardening JavaScript: Limiting Globals with Compartments
 
@@ -238,15 +247,23 @@ example, you may be surprised that `Buffer` and `require` are Node.js
 additions and not part of JavaScript.
 
 The conventional globals defined by browser or node.js hosts are
+Almost all existing JS code was written to run under Node.js or inside a browser,
+so it's easy to conflate the environment features with JavaScript itself. For
+example, you may be surprised that `Buffer` and `require` are Node.js
+additions and not part of JavaScript.
+
 not available by default in a `Compartment`, whether authority-bearing
 or not:
 
  - authority-bearing:
    - `window`, `document`, `process`, `console`
-   - `require` (use `import` module syntax instead)
    - `setImmediate`, `clearImmediate`, `setTimeout`
      - but `Promise` is available, so sometimes
        `Promise.resolve().then(_ => fn())` suffices
+     - see also `TimerService` @@TODO IOU link
+   - `require` (Use `import` module syntax instead.)
+   - `localStorage` (see @@store API, @@orthogonal persistence TODO)
+   - `global` (Use `globalThis` instead.)
  - authority-free but host-defined:
    - `Buffer`
    - `URL` and `URLSearchParams`
@@ -254,12 +271,32 @@ or not:
    - `WebAssembly`
 
 Compartments used to load Agoric smart contracts do provide
-`console` and `assert` globals.
+`console` and `assert` globals. In these compartments, `globalThis` is hardened.
 
 ::: tip TODO: ref SES console / assert API?
+@@@TODO: migrate from js overview:
+Note that `console.log`’s exact behavior is up to
+  the host program; display to the operator is not guaranteed. Use the console
+  for debug information only. The console is not obliged to write to the POSIX
+  standard output.
 :::
 
 ## @@@@@@@@@@@ TODO: re-think remaining sections
+
+@@TODO integrate
+`debugger` is a first-class JavaScript statement, and behaves as expected in vat code.
+
+### Frozen `globalThis` @@TODO integrate
+
+Vats run in a `Compartment` with a frozen `globalThis` object. If mutable,
+it would provide an ambient communication channel. One side of this channel
+could set `globalThis.heyBuddyAreYouOutThere = 'exfiltrated message'`, and
+the other side could periodically read it. This would violate object-capability
+security; objects may only communicate through references.
+
+Vats can create a new `Compartment` object, and decide if it supports object-capability
+security. If it does, they should run `harden(compartment.globalThis)` on it
+and only then load any untrusted code into it.
 
 ## Types: advisory
 
