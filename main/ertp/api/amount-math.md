@@ -57,7 +57,8 @@ naming a particular right, or an arbitrary object that sensibly represents the r
 
 Note that numbers in a value are represented as type `BigInt`, which allows for arbitrarily 
 large numbers. `BigInts` are depicted as an integer with an appended "n"; e.g. `10n`, `137n`. 
-See the [`BigInt` section in the JavaScript Distributed Programming Guide](/guides/js-programming/bigint.md) for details. 
+See the BigInt section @@IOU link for
+details about `BigInts`.
 
 ## Brand parameters
 
@@ -88,7 +89,7 @@ does coerce a `Number` argument to a `BigInt`, so both `4` and `4n` return an
 amount with a value of `4n`, using `Numbers` is likely to confuse later viewers
 of your code. 
 
-See the [BigInt section in the JavaScript Distributed Programming Guide](/guides/js-programming/bigint.md) for 
+See the BigInt section @@IOU link for
 details about `BigInts`. 
 
 ```js

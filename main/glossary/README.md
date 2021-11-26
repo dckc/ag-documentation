@@ -77,7 +77,7 @@ digital assets in the quantity specified by an [amount](#amounts).
 
 JavaScript's `Number` primitive only represents numbers up to 253 - 1. `BigInt` is a built-in 
 object that can be used for arbitrarily large integers. Agoric uses `BigInts` for times 
-and `Amount` `values`. See [here](/guides/js-programming/bigint.md) for more information.
+and `Amount` `values`.
 
 ## Board (Agoric Board)
 
