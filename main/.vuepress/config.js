@@ -113,7 +113,6 @@ module.exports = {
             '/guides/js-programming/hardened-js',
 	    '/guides/js-programming/ses/',
 	    '/guides/js-programming/bigint',
-	    '/guides/js-programming/vats',
 	    '/guides/js-programming/far',
 	    '/guides/js-programming/eventual-send',			
 	    '/guides/js-programming/notifiers',	

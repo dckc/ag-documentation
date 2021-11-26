@@ -75,6 +75,9 @@ forwarder that doesn't know what methods the remote object has.
 If you misspell or incorrectly capitalize the method name,
 the local environment can't tell you've done so. You'll only find out at runtime when the 
 remote object complains that it doesn't know that method.
+
+@@TODO: migrating from vats.md
+There are no tools for telling what vat something is in, or if two things are in the same or different vats. In general, you/your code should know if things are local (in the same vat) because you created them or they were passed to you by something guaranteeing that’s the case. Other objects you should treat as if they might be distant (in different vats). In practice, you will know that your normal method calls (`obj.method()`) fails because the method doesn't exist and that's usually when you slap your forehead and go "Of course, it's remote! I needed to call `E(obj).method()`.
 :::
 
 ::: tip Watch: How Agoric Solves Reentrancy Hazards (Nov 2020)

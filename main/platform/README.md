@@ -17,12 +17,10 @@ it's very important to ensure that one user cannot prevent another
 user's code from executing and that the way in which code is
 interleaved doesn't open up hazards such as reentrancy. SwingSet
 solves that problem by dividing up the execution environment into
-*vats*. A [vat](/guides/js-programming/vats.md) is a *unit
+*vats*. A [vat](/guides/js-programming/eventual-send.md#vat) is a *unit
 of synchrony*. This means that within a JavaScript vat, objects and
 functions can communicate with one another synchronously. Between
 vats, objects and functions communicate asynchronously, by design.
-
-A vat runs a single *event loop*.
 
 A physical machine can run one or several vats. A blockchain can run
 one or several communicating vats.
@@ -36,6 +34,9 @@ provides and the outside world. On a blockchain, this means writing to
 a part of the state that is intended to serve as an outbox. On a
 non-blockchain machine, this might mean sending a message to a remote
 machine.
+
+@@@from vats.md
+Vats need to run on some platform. Both a single physical machine and a blockchain (which might itself be running on a set of collaborating machines) are possible platforms. Either type of platform can host one or more vats.
 
 ## XS JavaScript engine@@
 

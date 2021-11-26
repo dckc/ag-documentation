@@ -3,6 +3,14 @@ sidebar: auto
 ---
 # Agoric REPL
 
+@@TODO: reorg as "chain services in addition to zoe..."
+
+@@TODO: preserve from vats.md
+The Agoric process starts several vats. Each vat hosts a service (e.g. the Board, Zoe,
+etc.). As of March, 2021, all contracts each run in a new vat with their own version of the
+Zoe Contract Facet. There is one vat that contains the Zoe Service.
+
+
 **Note**: This page describes the Agoric REPL. For information about the `Node.js` REPL, 
 click [here](https://nodejs.org/api/repl.html).
 

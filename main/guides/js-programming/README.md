@@ -20,11 +20,6 @@ language level are in process to become official standards.
     object that represents arbitrarily large integers. Agoric uses `BigInts` for 
     `amount` `values` and times.
 
-- **[Vats](./vats.md)**
-  - Objects and functions in the same JavaScript vat can
-    communicate synchronously. Communication with objects outside the
-    vat can only be done asynchronously. 
-    
 - **[`Far()` and remotable objects](./far.md)**
   - In Agoric smart contracts and dapps, you can call methods on objects from other
     vats or machines. Objects intended to be used from other vats are called *remotables*. 
