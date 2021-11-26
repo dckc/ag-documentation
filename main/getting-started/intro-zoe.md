@@ -76,9 +76,9 @@ from the `publicFacet` to a `creatorFacet`:
 <<< @/snippets/zoe/hello-facets.js
 
 The public facet is available to anyone who asks
-(using [getPublicFacet](/zoe/api/zoe.html#e-zoe-getpublicfacet-instance)),
+(using [getPublicFacet](/zoe/api/zoe.md#e-zoe-getpublicfacet-instance)),
 but the `creatorFacet` is only returned to the caller that
-starts the contract (using [startInstance](/zoe/api/zoe.html#e-zoe-startinstance-installation-issuerkeywordrecord-terms)).
+starts the contract (using [startInstance](/zoe/api/zoe.md#e-zoe-startinstance-installation-issuerkeywordrecord-terms)).
 
 This pattern of multiple object providing different access to some shared state
 (the `value` variable) is one of many _patterns of
