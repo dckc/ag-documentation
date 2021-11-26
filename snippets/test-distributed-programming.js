@@ -15,13 +15,14 @@ test('async fetch', async t => {
   const initialize = p => assert(p.length === 2);
 
   // #region asyncFetch
-  fetch('products.json')
+  const init = fetch('products.json')
     .then(response => response.json())
     .then(products => initialize(products))
     .catch(err => {
       console.log(`Fetch problem: ${err.message}`);
     });
   // #endregion asyncFetch
+  await init;
 });
 
 test('distributed programming -- basic notifiers', async t => {
