@@ -37,6 +37,15 @@ a part of the state that is intended to serve as an outbox. On a
 non-blockchain machine, this might mean sending a message to a remote
 machine.
 
+## XS JavaScript engine@@
+
+@@TODO
+Much of the `Intl` package, and some locale-specific aspects of other objects
+(e.g. `Number.prototype.toLocaleString`) have results that depend upon which locale is configured.
+This varies from one process to another. Our handling of this is still in development. Either these
+functions will be disabled, or they will act as if run on a host with a single fixed locale as defined
+by the SES specification.
+
 ## Cosmos SDK
 
 Our testnet has a single SwingSet instance with multiple vats running
