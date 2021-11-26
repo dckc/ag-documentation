@@ -322,7 +322,7 @@ as they are not interchangeable (and may have different prices). See also [fungi
 ## Notifier
 
 A notifier provides a stream of updates describing changes to the state of an [offer](#offer) or other object.
-For more information, see the [Notifier section in the Distributed JavaScript Programming Guide](/guides/js-programming/notifiers.md).
+For more information, see [Notifiers and Subscriptions](/guides/js-programming/notifiers.md).
 
 ## Object Capabilities
 
