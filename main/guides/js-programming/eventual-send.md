@@ -23,12 +23,18 @@ E(zoe).install(bundle)
   .catch(err => { ... });
 ```
 
+## Vats: the unit of synchrony
+
 The Agoric platform uses the same [event loop concurrency model](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop) as web browsers and node.js.
 Each event loop has a message queue, a call stack of frames, and a heap of objects:
 
 ![heap, stack, and queue](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop/the_javascript_runtime_environment_example.svg)
 
 We refer to this combination of a message queue, a stack, and a heap as a _vat_.
+
+@@TODO: use "unit of synchrony" and note between vats, we send async messages
+
+## Eventual Send
 
 One of the ways [Zoe partitions risk](https://www.youtube.com/watch?v=T6h6TMuVHKQ&t=368s) is by running in its own vat, separate from any smart contract that might
 use too much compute time or heap space. The smart contracts also run in separate vats.

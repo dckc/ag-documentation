@@ -470,7 +470,7 @@ A vat is a unit of isolation.
 Objects and functions in a JavaScript vat can communicate synchronously with one another. Vats and their contents can
 communicate with other vats and their objects and functions, but can only communicate asynchronously. 
 
-For more information, see the [Vat section in the Distributed JS Programming Guide](/guides/js-programming/vats.md)
+For more information, see the [Vat section in the Distributed JS Programming Guide](/guides/js-programming/eventual-send.md#vats-the-unit-of-synchrony)
 
 ## Wallet
 
