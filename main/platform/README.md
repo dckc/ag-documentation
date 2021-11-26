@@ -35,6 +35,8 @@ a part of the state that is intended to serve as an outbox. On a
 non-blockchain machine, this might mean sending a message to a remote
 machine.
 
+[*orthogonal persistence*](https://en.wikipedia.org/wiki/Persistence_(computer_science)#Orthogonal_or_transparent_persistence)
+
 @@@from vats.md
 Vats need to run on some platform. Both a single physical machine and a blockchain (which might itself be running on a set of collaborating machines) are possible platforms. Either type of platform can host one or more vats.
 
