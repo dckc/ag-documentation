@@ -1,4 +1,4 @@
-import { test } from '@agoric/zoe/tools/prepare-test-env-ava';
+import { test } from '@agoric/zoe/tools/prepare-test-env-ava.js';
 import { start as hello1 } from './hello1.js';
 
 test('Hello, World! test', async t => {
