@@ -6,6 +6,24 @@ import { E } from '@agoric/eventual-send';
 import { makeNotifierKit } from '@agoric/notifier';
 // #endregion importNotifier
 
+test('async fetch', async t => {
+  const assert = cond => t.true(cond);
+  const fetch = _ =>
+    Promise.resolve({
+      json: () => Promise.resolve(['p1', 'p2']),
+    });
+  const initialize = p => assert(p.length === 2);
+
+  // #region asyncFetch
+  fetch('products.json')
+    .then(response => response.json())
+    .then(products => initialize(products))
+    .catch(err => {
+      console.log(`Fetch problem: ${err.message}`);
+    });
+  // #endregion asyncFetch
+});
+
 test('distributed programming -- basic notifiers', async t => {
   // region makeNotifierKit
   const { notifier, updater } = makeNotifierKit();
