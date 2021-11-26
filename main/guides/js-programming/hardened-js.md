@@ -1,6 +1,6 @@
-# Intro to Hardened JavaScript
+# Hardened JavaScript
 
-::: tip Status: Work In Progress
+::: tip Status: Work In Progress (@@TODO)
 :::
 
 ::: tip Watch: Object-capability Programming in Secure Javascript

@@ -1,4 +1,4 @@
-# Remote object communication with `E()`
+# eventual send with `E()`
 
 In web browsers, a common pattern of remote communication is using the
 [asynchronous fetch API with promises](
