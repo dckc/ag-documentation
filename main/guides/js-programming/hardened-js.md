@@ -247,11 +247,6 @@ example, you may be surprised that `Buffer` and `require` are Node.js
 additions and not part of JavaScript.
 
 The conventional globals defined by browser or node.js hosts are
-Almost all existing JS code was written to run under Node.js or inside a browser,
-so it's easy to conflate the environment features with JavaScript itself. For
-example, you may be surprised that `Buffer` and `require` are Node.js
-additions and not part of JavaScript.
-
 not available by default in a `Compartment`, whether authority-bearing
 or not:
 
@@ -281,8 +276,6 @@ Note that `console.log`’s exact behavior is up to
   standard output.
 :::
 
-## @@@@@@@@@@@ TODO: re-think remaining sections
-
 @@TODO integrate
 `debugger` is a first-class JavaScript statement, and behaves as expected in vat code.
 
@@ -297,6 +290,8 @@ security; objects may only communicate through references.
 Vats can create a new `Compartment` object, and decide if it supports object-capability
 security. If it does, they should run `harden(compartment.globalThis)` on it
 and only then load any untrusted code into it.
+
+## @@@@@@@@@@@ TODO: re-think remaining sections
 
 ## Types: advisory
 
