@@ -14,14 +14,11 @@ to pay for code execution, please see our [work-in-progress
 documentation](/zoe/api/fees-and-metering.md). We expect that this model will change in the upcoming
 few months. 
 :::
-
-## What is Zoe?
+## Zoe and Offer Safety
 
 Zoe is the Agoric smart contract framework. It provides _offer safety_,
 enforcing the previously implicit agreement that, for example, if I hand my
 dollar to a fruit vendor, I will get an apple in exchange.
-
-## Zoe and Offer Safety
 
 Zoe is based on offers, rather than one-way transactions. An offer
 expresses what is wanted (an apple) as well as what is given (a dollar).
