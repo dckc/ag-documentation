@@ -60,8 +60,8 @@ makes an object with `get` and `set` methods, and returns it. A few
 things are a bit out of the ordinary:
 
  - We recommend arrow (`=>`) function style for clarity;
-   in _Hardened JavaScript @@TODO_ we'll go into more
-   detail on recommendations and requirements for using
+   in [Hardened JavaScript](/guides/js-programming/hardened-js.md)
+   we'll go into more detail on recommendations and requirements for using
    JavaScript securely.
  - `_zcf` is prefixed with `_` to mark it unused;
    we'll discuss the _Zoe Contract Facet @@TODO link_ a little later.
